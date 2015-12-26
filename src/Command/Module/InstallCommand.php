@@ -38,7 +38,7 @@ class InstallCommand extends ContainerAwareCommand
         if (!$module) {
             $moduleList = [];
             $modules = $this->getSite()->getModules(true, false, true, true, true, true);
-
+            print_r($modules);
             while (true) {
                 $moduleName = $io->choiceNoList(
                     $this->trans('commands.module.install.questions.module'),

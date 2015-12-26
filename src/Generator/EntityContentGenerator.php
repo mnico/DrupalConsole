@@ -18,7 +18,7 @@ class EntityContentGenerator extends Generator
      * @param string $label              Entity label
      * @param string $bundle_entity_type (Config) entity type acting as bundle
      */
-    public function generate($module, $entity_name, $entity_class, $label, $bundle_entity_type = null)
+    public function generate($module, $entity_name, $entity_class, $label, $bundle_entity_type = null, $fields = [])
     {
         $parameters = [
             'module' => $module,
@@ -26,6 +26,7 @@ class EntityContentGenerator extends Generator
             'entity_class' => $entity_class,
             'label' => $label,
             'bundle_entity_type' => $bundle_entity_type,
+            'fields' => $fields,
         ];
 
         if ($bundle_entity_type) {

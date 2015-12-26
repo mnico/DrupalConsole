@@ -131,6 +131,24 @@ class {{ entity_class }} extends ContentEntityBase implements {{ entity_class }}
     $this->set('created', $timestamp);
     return $this;
   }
+  {% for field in fields %}
+
+  /**
+   *
+   */
+  public function get{{ field.name|capitalize }}() {
+    return $this->get('{{ field.name }}')->value;
+  }
+
+  /**
+   *
+   */
+  public function set{{ field.name|capitalize }}(${{ field.name }}) {
+    $this->set('{{ field.name }}', ${{ field.name }});
+    return $this;
+  }
+
+  {% endfor %}
 
   /**
    * {@inheritdoc}
@@ -259,6 +277,14 @@ class {{ entity_class }} extends ContentEntityBase implements {{ entity_class }}
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the entity was last edited.'));
+
+    {% for field in fields %}
+
+    $fields['{{ field.name }}'] = BaseFieldDefinition::create('{{ field.type }}')
+      ->setLabel(t('{{ field.label }}'))
+      ->setDescription(t('TODO'))
+      ->setDefaultValue('');
+    {% endfor %}
 
     return $fields;
   }

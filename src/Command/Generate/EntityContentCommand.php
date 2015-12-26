@@ -31,6 +31,13 @@ class EntityContentCommand extends EntityCommand
             InputOption::VALUE_NONE,
             $this->trans('commands.generate.entity.content.options.has-bundles')
         );
+        $this->addOption(
+            'fields',
+            null,
+            InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+            'Description',
+            []
+        );
     }
 
     /**
@@ -40,7 +47,7 @@ class EntityContentCommand extends EntityCommand
     {
         parent::interact($input, $output);
         $output = new DrupalStyle($input, $output);
-
+        $stringUtils = $this->getStringHelper();
         // --bundle-of option
         $bundle_of = $input->getOption('has-bundles');
         if (!$bundle_of) {
@@ -50,6 +57,72 @@ class EntityContentCommand extends EntityCommand
             );
             $input->setOption('has-bundles', $bundle_of);
         }
+
+        $fields = $input->getOption('fields');
+
+        $define_more_fields = $output->confirm(
+            'Desea definir más campos?',
+            false
+        );
+        if ($define_more_fields) {
+            $types = [
+                'string',
+                'integer',
+            ];
+            while(true) {
+                $field_type = $output->choiceNoList(
+                    'Que tipo de campo',
+                    $types,
+                    null,
+                    true
+                );
+                if (empty($field_type)) {
+                    break;
+                }
+
+                while (true) {
+                    $field_name = $output->ask(
+                        'Machine Name',
+                        '',
+                        function ($name) use ($output) {
+                          if ($name != '') {
+
+                            return $name;
+                          } else {
+                            $io->error('Debe ingresar un nombre de maquina valido');
+
+                            return false;
+                          }
+                        }
+                    );
+
+                    if ($field_name) {
+                        break;
+                    }
+
+                    $field_name = $stringUtils->createMachineName($field_name);
+                }
+
+
+
+                $field_label = $output->ask(
+                    'Label?',
+                    $field_name
+                );
+
+                $fields[] = [
+                    'type' => $field_type,
+                    'name' => $field_name,
+                    'label' => $field_label,
+                ];
+
+                $output->info('Next field');
+            }
+
+            $input->setOption('fields', $fields);
+        }
+
+
     }
 
     /**
@@ -65,9 +138,11 @@ class EntityContentCommand extends EntityCommand
 
         $bundle_entity_name = $has_bundles ? $entity_name . '_type' : null;
 
+        $fields = $input->getOption('fields');
+
         $this
             ->getGenerator()
-            ->generate($module, $entity_name, $entity_class, $label, $bundle_entity_name);
+            ->generate($module, $entity_name, $entity_class, $label, $bundle_entity_name, $fields);
 
         if ($has_bundles) {
             $this->getChain()->addCommand(
@@ -80,6 +155,8 @@ class EntityContentCommand extends EntityCommand
                 ]
             );
         }
+
+
     }
 
     protected function createGenerator()
